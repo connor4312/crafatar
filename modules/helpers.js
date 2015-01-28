@@ -103,9 +103,9 @@ var currently_running = [];
 function callback_for(uuid, type, err, hash) {
   for (var i = 0; i < currently_running.length; i++) {
     var current = currently_running[i];
-
     if (current.uuid === uuid && current.type === type) {
-      current.callback(err, hash );
+      logging.log(uuid + " now processing queued " + type + " request");
+      current.callback(err, hash);
       currently_running.splice(i, 1); // remove from array
     }
   }
@@ -131,7 +131,7 @@ function store_images(uuid, details, type, callback) {
     currently_running.push(new_hash);
     networking.get_profile((isUUID ? uuid : null), function(err, profile) {
       if (err || (isUUID && !profile)) {
-        callback_for(uuid, err, null);
+        callback_for(uuid, type, err, null);
       } else {
         store_skin(uuid, profile, details, function(err, skin_hash) {
           cache.save_hash(uuid, skin_hash, null);
@@ -144,6 +144,7 @@ function store_images(uuid, details, type, callback) {
       }
     });
   } else {
+    logging.log(uuid + " ID is already being processed, adding to callback queue");
     currently_running.push(new_hash);
   }
 }
